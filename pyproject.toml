@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "pptx-slide-generator"
+version = "0.1.0"
+description = "Generically generate powerpoint slides with given master layout and shape content."
+authors = ["Franz Wöllert <franz.woellert@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+packages = [{include = "pptx_slide_generator"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+pandas = "^2.0.1"
+openpyxl = "^3.1.2"
+pydantic = "^1.10.7"
+
+[tool.poetry.group.dev.dependencies]
+python-pptx = "^0.6.21"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
