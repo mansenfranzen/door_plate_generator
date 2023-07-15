@@ -103,13 +103,27 @@ def generate_slides(pptx: Presentation,
 
     for shape in shapes:
         key = _get_sanitized_key_from_shape_name(shape, prefix)
-        data = slides_data.get(key)
 
-        if not data.layout:
-            warnings.warn(f"Skipping {key} because no template provided.")
+        try:
+            data = slides_data.get(key)
+        except KeyError:
+            warnings.warn(f"Room '{key}' from SVG/Pptx does not have any data in excel file.")
             continue
 
-        layout = layouts[data.layout]
+        if not data.relevant:
+            continue
+
+        if not data.layout:
+            warnings.warn(f"Skipping '{key}' because no layout provided.")
+            continue
+
+        try:
+            layout = layouts[data.layout]
+        except KeyError:
+            warnings.warn(f"Layout with name '{data.layout}' "
+                          f"for room '{key}' does not exist in Powerpoint.")
+            continue
+
         new_slide = pptx.slides.add_slide(layout)
         shape.click_action.target_slide = new_slide
 
@@ -127,4 +141,8 @@ def _populate_shapes(layout: Slide,
     shapes = _get_relevant_shapes_by_name(new_slide, exclude_name=ignore)
 
     for shape in shapes:
-        shape.text = data.values[shape.name]
+        try:
+            shape.text = data.values[shape.name]
+        except KeyError:
+            raise KeyError(f"Layout '{layout.name}' with shape '{shape.name}' "
+                           f"has no data in excel.")

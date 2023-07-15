@@ -10,6 +10,7 @@ class SlideData(BaseModel):
 
     key: str
     layout: Optional[str]
+    relevant: bool
     values: Dict[str, str]
 
 

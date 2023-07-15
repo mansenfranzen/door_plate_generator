@@ -8,6 +8,10 @@ from pptx import Presentation
 def run(excel_path: str,
         excel_column_key: str,
         excel_column_template: str,
+        excel_column_section: str,
+        excel_column_relevant: str,
+        excel_section_name: str,
+        excel_relevant_name: str,
         pptx_path: str,
         pptx_slide_idx: int,
         pptx_shape_exclude: str,
@@ -19,6 +23,10 @@ def run(excel_path: str,
 
     slides_data = load_slide_content(column_key=excel_column_key,
                                      column_template=excel_column_template,
+                                     column_section=excel_column_section,
+                                     column_relevant=excel_column_relevant,
+                                     relevant_name=excel_relevant_name,
+                                     section_name=excel_section_name,
                                      path=excel_path)
 
     svg_names = get_svg_shape_names(path=svg_path,

@@ -8,12 +8,10 @@ readme = "README.md"
 packages = [{include = "pptx_slide_generator"}]
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = "^3.9"
 pandas = "^2.0.1"
 openpyxl = "^3.1.2"
 pydantic = "^1.10.7"
-
-[tool.poetry.group.dev.dependencies]
 python-pptx = "^0.6.21"
 
 [build-system]
