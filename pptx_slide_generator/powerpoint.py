@@ -1,5 +1,7 @@
-import warnings
-from typing import Dict, Tuple, Iterable, List, Optional
+import sys
+from typing import Dict, Tuple, List, Optional
+
+from loguru import logger
 
 from pptx.presentation import Presentation
 from pptx.shapes.base import BaseShape
@@ -7,6 +9,9 @@ from pptx.slide import Slide
 
 from pptx_slide_generator.models import SlidesData, SlideData
 
+
+#logger.configure(handlers=[{"sink": sys.stderr, "format": "{message}", "level": "WARNING"}])
+logger.add("logs/file_{time}.log", level="WARNING", format="{message}")
 
 def _get_relevant_shapes_by_name(
         slide: Slide,
@@ -29,7 +34,7 @@ def _get_relevant_shapes_by_name(
     return shapes
 
 
-def _get_sanitized_key_from_shape_name(shape: BaseShape, prefix: str):
+def _get_sanitized_room_from_shape_name(shape: BaseShape, prefix: str):
     """Get the lookup key between pptx shape and excel row while sanitizing.
 
     """
@@ -79,7 +84,7 @@ def _get_shape_coordinates(shape: BaseShape) -> Tuple[float, float]:
 def _mirror_shape_names(source: Slide, target: Slide):
     """Mirrors all shape names in source slide with target slice. Leverages
     shape coordinates to create mapping between source and target shape because
-    order can't be assumed to equal.
+    order can't be assumed to be equal.
 
     """
 
@@ -91,37 +96,54 @@ def _mirror_shape_names(source: Slide, target: Slide):
         shape.name = keyed_source_names[target_key]
 
 
+def _get_room_data(slides_data: SlidesData, room: str) -> Optional[SlideData]:
+    """Retrieve slide data for given a room while performing validations.
+
+    """
+
+    try:
+        data = slides_data.get(room)
+    except KeyError:
+        logger.warning(f"Room '{room}' from SVG/Pptx does not have any data in excel file.")
+        return
+
+    if not data.relevant:
+        logger.info(f"Room '{room}' from SVG/Pptx is skipped because marked as not relevant in excel file.")
+        return
+
+    if not data.layout:
+        logger.warning(f"Room '{room}' from SVG/Pptx is skipped because no layout provided in excel file.")
+        return
+
+    return data
+
+
 def generate_slides(pptx: Presentation,
                     slide_idx: int,
                     slides_data: SlidesData,
                     prefix: str,
                     exclude: str):
+    """Generates new slides given a powerpoint slide with relevant
+    shape names and corresponding slide data.
+
+    """
+
     slide = pptx.slides[slide_idx]
     shapes = _get_relevant_shapes_by_name(slide, include_prefix=prefix)
     shapes = sorted(shapes, key=lambda x: x.name)
     layouts = get_named_master_layouts(pptx)
 
     for shape in shapes:
-        key = _get_sanitized_key_from_shape_name(shape, prefix)
+        room = _get_sanitized_room_from_shape_name(shape, prefix)
+        data = _get_room_data(slides_data=slides_data, room=room)
 
-        try:
-            data = slides_data.get(key)
-        except KeyError:
-            warnings.warn(f"Room '{key}' from SVG/Pptx does not have any data in excel file.")
-            continue
-
-        if not data.relevant:
-            continue
-
-        if not data.layout:
-            warnings.warn(f"Skipping '{key}' because no layout provided.")
+        if not data:
             continue
 
         try:
             layout = layouts[data.layout]
         except KeyError:
-            warnings.warn(f"Layout with name '{data.layout}' "
-                          f"for room '{key}' does not exist in Powerpoint.")
+            logger.warning(f"Room '{room}' has no corresponding layout '{data.layout}' in Powerpoint master.")
             continue
 
         new_slide = pptx.slides.add_slide(layout)
@@ -130,13 +152,17 @@ def generate_slides(pptx: Presentation,
         _populate_shapes(layout=layout,
                          new_slide=new_slide,
                          data=data,
-                         ignore=exclude)
+                         ignore=exclude,
+                         room=room)
 
 
 def _populate_shapes(layout: Slide,
                      new_slide: Slide,
                      data: SlideData,
-                     ignore: str):
+                     ignore: str,
+                     room: str):
+    """Populate newly created shape"""
+
     _mirror_shape_names(layout, new_slide)
     shapes = _get_relevant_shapes_by_name(new_slide, exclude_name=ignore)
 
@@ -144,5 +170,4 @@ def _populate_shapes(layout: Slide,
         try:
             shape.text = data.values[shape.name]
         except KeyError:
-            raise KeyError(f"Layout '{layout.name}' with shape '{shape.name}' "
-                           f"has no data in excel.")
+            logger.warning(f"Room '{room}' with layout '{layout.name}' has no data for shape '{shape.name}' in excel.")
