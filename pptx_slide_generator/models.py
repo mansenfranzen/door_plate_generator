@@ -1,25 +1,34 @@
-from typing import Dict, Optional
+from typing import Dict, Optional, List
 
 from pydantic import BaseModel
 
 
 class SlideData(BaseModel):
-    """Represents the content for a single slide.
+    """Represents the data for an individual slide.
 
     """
 
-    key: str
     layout: Optional[str]
     relevant: bool
     values: Dict[str, str]
 
 
-class SlidesData(BaseModel):
+class RoomData(BaseModel):
+    """Represents the data for an individual room.
+    A single room may have one or more distinct slides.
+
+    """
+
+    name: str
+    slides: List[SlideData]
+
+
+class ExcelData(BaseModel):
     """Contains the data of all slides.
 
     """
 
-    slides: Dict[str, SlideData]
+    rooms: Dict[str, RoomData]
 
-    def get(self, slide_key: str) -> SlideData:
-        return self.slides[slide_key]
+    def get(self, room_name: str) -> RoomData:
+        return self.rooms[room_name]

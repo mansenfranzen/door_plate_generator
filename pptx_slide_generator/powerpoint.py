@@ -1,4 +1,3 @@
-import sys
 from typing import Dict, Tuple, List, Optional
 
 from loguru import logger
@@ -7,11 +6,10 @@ from pptx.presentation import Presentation
 from pptx.shapes.base import BaseShape
 from pptx.slide import Slide
 
-from pptx_slide_generator.models import SlidesData, SlideData
+from pptx_slide_generator.models import ExcelData, RoomData, SlideData
 
-
-#logger.configure(handlers=[{"sink": sys.stderr, "format": "{message}", "level": "WARNING"}])
 logger.add("logs/file_{time}.log", level="WARNING", format="{message}")
+
 
 def _get_relevant_shapes_by_name(
         slide: Slide,
@@ -96,31 +94,64 @@ def _mirror_shape_names(source: Slide, target: Slide):
         shape.name = keyed_source_names[target_key]
 
 
-def _get_room_data(slides_data: SlidesData, room: str) -> Optional[SlideData]:
+def _get_room_data(excel_data: ExcelData, room_name: str) -> Optional[RoomData]:
     """Retrieve slide data for given a room while performing validations.
 
     """
 
     try:
-        data = slides_data.get(room)
+        data = excel_data.get(room_name)
     except KeyError:
-        logger.warning(f"Room '{room}' from SVG/Pptx does not have any data in excel file.")
-        return
-
-    if not data.relevant:
-        logger.info(f"Room '{room}' from SVG/Pptx is skipped because marked as not relevant in excel file.")
-        return
-
-    if not data.layout:
-        logger.warning(f"Room '{room}' from SVG/Pptx is skipped because no layout provided in excel file.")
+        logger.warning(f"Room '{room_name}' from SVG/Pptx does not have any data in excel file.")
         return
 
     return data
 
 
+def _generate_room_slides(pptx: Presentation,
+                          layouts: Dict,
+                          room_data: RoomData,
+                          shape: BaseShape,
+                          exclude: str):
+    """Generates all slides for a single room.
+
+    """
+
+    for idx, slide_data in enumerate(room_data.slides):
+
+        if not slide_data.relevant:
+            logger.info(f"Room '{room_data.name}' from SVG/Pptx is skipped "
+                        f"because marked as not relevant in excel file.")
+            continue
+
+        if not slide_data.layout:
+            logger.warning(f"Room '{room_data.name}' from SVG/Pptx is skipped "
+                           f"because no layout provided in excel file.")
+            continue
+
+        try:
+            layout = layouts[slide_data.layout]
+        except KeyError:
+            logger.warning(f"Room '{room_data.name}' has no corresponding layout "
+                           f"'{slide_data.layout}' in Powerpoint master.")
+            continue
+
+        new_slide = pptx.slides.add_slide(layout)
+
+        # only add a single hyperlink for first slide because multiple slides can't be linked
+        if idx == 0:
+            shape.click_action.target_slide = new_slide
+
+        _populate_shapes(layout=layout,
+                         new_slide=new_slide,
+                         data=slide_data,
+                         ignore=exclude,
+                         room=room_data.name)
+
+
 def generate_slides(pptx: Presentation,
                     slide_idx: int,
-                    slides_data: SlidesData,
+                    excel_data: ExcelData,
                     prefix: str,
                     exclude: str):
     """Generates new slides given a powerpoint slide with relevant
@@ -134,26 +165,17 @@ def generate_slides(pptx: Presentation,
     layouts = get_named_master_layouts(pptx)
 
     for shape in shapes:
-        room = _get_sanitized_room_from_shape_name(shape, prefix)
-        data = _get_room_data(slides_data=slides_data, room=room)
+        room_name = _get_sanitized_room_from_shape_name(shape, prefix)
+        room_data = _get_room_data(excel_data=excel_data, room_name=room_name)
 
-        if not data:
+        if not room_data:
             continue
 
-        try:
-            layout = layouts[data.layout]
-        except KeyError:
-            logger.warning(f"Room '{room}' has no corresponding layout '{data.layout}' in Powerpoint master.")
-            continue
-
-        new_slide = pptx.slides.add_slide(layout)
-        shape.click_action.target_slide = new_slide
-
-        _populate_shapes(layout=layout,
-                         new_slide=new_slide,
-                         data=data,
-                         ignore=exclude,
-                         room=room)
+        _generate_room_slides(pptx=pptx,
+                              layouts=layouts,
+                              room_data=room_data,
+                              shape=shape,
+                              exclude=exclude)
 
 
 def _populate_shapes(layout: Slide,
@@ -161,7 +183,9 @@ def _populate_shapes(layout: Slide,
                      data: SlideData,
                      ignore: str,
                      room: str):
-    """Populate newly created shape"""
+    """Populate newly created shapes with content from `SlideData`.
+
+    """
 
     _mirror_shape_names(layout, new_slide)
     shapes = _get_relevant_shapes_by_name(new_slide, exclude_name=ignore)
@@ -170,4 +194,5 @@ def _populate_shapes(layout: Slide,
         try:
             shape.text = data.values[shape.name]
         except KeyError:
-            logger.warning(f"Room '{room}' with layout '{layout.name}' has no data for shape '{shape.name}' in excel.")
+            logger.warning(f"Room '{room}' with layout '{layout.name}' "
+                           f"has no data for shape '{shape.name}' in excel.")
