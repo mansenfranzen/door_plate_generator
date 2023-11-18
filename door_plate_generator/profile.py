@@ -3,13 +3,13 @@ from pathlib import Path
 from typing import Dict
 from loguru import logger
 
-PROFILE_FILENAME = "pptx_slide_generator.json"
+PROFILE_FILENAME = "door_plate_generator.json"
 PREVIOUS_PROFILE_NAME = "LATEST"
 
 
 def add_profile(profile_name: str, values: Dict):
     """Stores given profile in home directory as json file. If profile
-    doesn't exists, it will be created.
+    doesn't exist, it will be created.
 
     """
     path = Path().home().joinpath(PROFILE_FILENAME)

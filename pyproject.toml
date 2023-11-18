@@ -1,11 +1,11 @@
 [tool.poetry]
-name = "pptx-slide-generator"
+name = "door-plate-generator"
 version = "0.1.0"
-description = "Generically generate powerpoint slides with given master layout and shape content."
+description = "Generate door plates from door plans, master layouts and master data."
 authors = ["Franz Wöllert <franz.woellert@gmail.com>"]
 license = "MIT"
 readme = "README.md"
-packages = [{include = "pptx_slide_generator"}]
+packages = [{include = "door_plate_generator"}]
 
 [tool.poetry.dependencies]
 python = "^3.9"
@@ -21,4 +21,4 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
-pptx_slide_generator = "pptx_slide_generator.__main__:cli"
+door-plate-generator = "door_plate_generator.__main__:cli"

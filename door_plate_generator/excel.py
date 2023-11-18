@@ -1,10 +1,9 @@
 import functools
-import warnings
 from typing import Dict
 
 import pandas as pd
 
-from pptx_slide_generator.models import ExcelData, RoomData, SlideData
+from door_plate_generator.models import ExcelData, RoomData, SlideData
 
 
 def _sanitize_values(row: pd.Series) -> Dict:

@@ -1,8 +1,8 @@
 from loguru import logger
 
-from pptx_slide_generator.excel import load_excel_content
-from pptx_slide_generator.powerpoint import rename_shapes, generate_slides
-from pptx_slide_generator.svg import get_svg_shape_names
+from door_plate_generator.excel import load_excel_content
+from door_plate_generator.powerpoint import rename_shapes, generate_slides
+from door_plate_generator.svg import get_svg_shape_names
 from pptx import Presentation
 
 

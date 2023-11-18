@@ -1,12 +1,11 @@
 from typing import Dict, Tuple, List, Optional
-import sys
 from loguru import logger
 
 from pptx.presentation import Presentation
 from pptx.shapes.base import BaseShape
 from pptx.slide import Slide
 
-from pptx_slide_generator.models import ExcelData, RoomData, SlideData
+from door_plate_generator.models import ExcelData, RoomData, SlideData
 
 
 def _get_relevant_shapes_by_name(
