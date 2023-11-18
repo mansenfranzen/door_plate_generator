@@ -14,13 +14,13 @@ def add_profile(profile_name: str, values: Dict):
     """
     path = Path().home().joinpath(PROFILE_FILENAME)
     if path.exists():
-        profiles = json.loads(path.read_text())
+        profiles = json.loads(path.read_text(encoding="utf-8"))
     else:
         profiles = {}
 
     parameters = {key: value for key, value in values.items() if value is not None}
     profiles[profile_name] = parameters
-    path.write_text(json.dumps(profiles, indent=3))
+    path.write_text(json.dumps(profiles, indent=3), encoding="utf-8")
 
     logger.info(f"Store '{profile_name} under '{path}' with following values:\n\n{json.dumps(parameters, indent=3)}")
 
@@ -51,7 +51,7 @@ def read_profile(profile_name: str) -> Dict:
     path = Path().home().joinpath(PROFILE_FILENAME)
 
     try:
-        profiles = json.loads(path.read_text())
+        profiles = json.loads(path.read_text(encoding="utf-8"))
         return profiles[profile_name]
 
     except (KeyError, FileNotFoundError) as e:
