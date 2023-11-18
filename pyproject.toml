@@ -21,4 +21,4 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
-run= "pptx_slide_generator.__main__:run"
+pptx_slide_generator = "pptx_slide_generator.__main__:cli"
