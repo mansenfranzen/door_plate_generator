@@ -1,5 +1,5 @@
 from typing import Dict, Tuple, List, Optional
-
+import sys
 from loguru import logger
 
 from pptx.presentation import Presentation
@@ -7,8 +7,6 @@ from pptx.shapes.base import BaseShape
 from pptx.slide import Slide
 
 from pptx_slide_generator.models import ExcelData, RoomData, SlideData
-
-logger.add("logs/file_{time}.log", level="WARNING", format="{message}")
 
 
 def _get_relevant_shapes_by_name(

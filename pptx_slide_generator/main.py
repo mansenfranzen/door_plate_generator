@@ -5,12 +5,12 @@ from pptx_slide_generator.powerpoint import rename_shapes, generate_slides
 from pptx_slide_generator.svg import get_svg_shape_names
 from pptx import Presentation
 
-logger.add("logs/file_{time}.log", level="WARNING", format="{message}")
-
 
 def run(**kwargs):
     """Main entry point to execute generate slides from svg and excel input."""
 
+    logger_name = f'logs/{kwargs["excel_section_value"]}-{{time}}.log'
+    logger.add(logger_name, level="WARNING", format="{message}")
     logger.info(f'Processing {kwargs["pptx_path"]}')
 
     excel_data = load_excel_content(column_room=kwargs["excel_column_room"],
