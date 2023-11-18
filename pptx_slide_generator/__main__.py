@@ -65,8 +65,6 @@ def create_default_profile():
                   svg_path="PathToSvgFile",
                   result_path="PathToResultPptxFile")
 
-
-
     profile.add_profile("default", values)
 
 
@@ -76,7 +74,8 @@ def create_default_profile():
 @click.option('--pptx-path', type=str, required=False, help='Path to the PowerPoint file')
 @click.option('--svg-path', type=str, required=False, help='Path to the SVG file')
 @click.option('--result-path', type=str, required=False, help='Path to the result file')
-@click.option('--excel-section-value', type=str, required=False, help='Value for the filtered section in the Excel file')
+@click.option('--excel-section-value', type=str, required=False,
+              help='Value for the filtered section in the Excel file')
 @click.option('--excel-column-room', type=str, default="Raumnr", help='Column name for the room in the Excel file')
 @click.option('--excel-column-layout', type=str, default="Layout", help='Column name for the layout in the Excel file')
 @click.option('--excel-column-section', type=str, default="Bereich",
