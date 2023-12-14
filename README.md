@@ -65,7 +65,7 @@ Supplying all parameters for each invocation is tedious. Hence, you can specify 
 
 - `create`: Create and save a profile with specific configurations.
 - `instantiate`: Helper to create a first example profile.
-- `execute`: Helper to create a first example profile name.
+- `execute`: Execute specific profile name.
 
 ### Help
 
