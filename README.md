@@ -52,7 +52,8 @@ door-plate-generator run \
   --excel-path "path/to/excel.xlsx" \
   --pptx-path "path/to/template.pptx" \
   --svg-path "path/to/image.svg" \
-  --result-path "path/to/result.pptx" 
+  --result-path "path/to/result.pptx" \
+  --excel-section-value "House1EG"
 ```
 
 ### Rerun
